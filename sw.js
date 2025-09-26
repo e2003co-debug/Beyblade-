@@ -13,3 +13,11 @@ self.addEventListener("fetch", e=>{
     }).catch(()=> caches.match("./index.html")))
   );
 });
+function resetTournament(){
+  if(confirm("¿Seguro que quieres reiniciar el campeonato?")){
+    state = structuredClone(defaultState);
+    save();
+    initUI();
+    alert("🏁 Campeonato reiniciado");
+  }
+}
