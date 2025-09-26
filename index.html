@@ -72,13 +72,30 @@
 
   <!-- Tienda -->
   <section data-section="tienda" hidden>
-    <h2>💰 Tienda</h2>
+  <h2>💰 Tienda</h2>
+
+  <!-- Aquí se generan automáticamente las opciones -->
+  <div id="shopItems"></div>
+
+  <details style="margin-top:10px">
+    <summary>⚙️ Personalizar precios</summary>
     <div class="row">
-      <div class="col"><button onclick="buy('p1','punta')">P1 Punta (5)</button><button onclick="buy('p2','punta')">P2 Punta</button></div>
-      <div class="col"><button onclick="buy('p1','anillo')">P1 Anillo (6)</button><button onclick="buy('p2','anillo')">P2 Anillo</button></div>
-      <div class="col"><button onclick="buy('p1','rueda')">P1 Rueda (8)</button><button onclick="buy('p2','rueda')">P2 Rueda</button></div>
+      <div class="col"><label>Punta</label><input id="pricePunta" type="number" value="5" min="0"></div>
+      <div class="col"><label>Anillo</label><input id="priceAnillo" type="number" value="6" min="0"></div>
+      <div class="col"><label>Rueda metal</label><input id="priceRueda" type="number" value="8" min="0"></div>
+      <div class="col"><label>Lanzador</label><input id="priceLanzador" type="number" value="10" min="0"></div>
+      <div class="col"><label>Bey completo</label><input id="priceBey" type="number" value="15" min="0"></div>
+      <div class="col"><label>Reparación</label><input id="priceRep" type="number" value="4" min="0"></div>
     </div>
-    <table style="margin-top:10px"><thead><tr><th>Jugador</th><th>Item</th><th>Costo</th><th>Créditos restantes</th><th>Fecha</th></tr></thead><tbody id="shopLog"></tbody></table>
+    <div style="margin-top:8px">
+      <button class="ghost" onclick="applyPrices()">Aplicar</button>
+    </div>
+  </details>
+
+  <table style="margin-top:12px">
+    <thead><tr><th>Jugador</th><th>Compra</th><th>Costo</th><th>Créditos restantes</th><th>Fecha</th></tr></thead>
+    <tbody id="shopLog"></tbody>
+  </table>
   </section>
 
   <!-- Cartas -->
