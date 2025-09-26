@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Campeonato Beyblade — Gestor</title>
+<meta name="theme-color" content="#0e0f13">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  :root{--bg:#0e0f13;--panel:#161821;--muted:#8a90a2;--text:#e8ecff;--accent:#58a6ff;--border:#2a2f3a}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;color:var(--text);background:var(--bg)}
+  header{padding:14px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:#0b0c10}
+  h1{margin:0;font-size:18px}
+  .tabs{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px}
+  .tab{padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel);cursor:pointer}
+  .tab.active{outline:2px solid var(--accent)}
+  main{padding:16px;max-width:1000px;margin:auto;display:grid;gap:16px}
+  section{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .col{flex:1 1 280px}
+  input,button{font-size:16px}
+  input[type="text"],input[type="number"]{width:100%;background:#0f1118;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px}
+  button{background:var(--accent);color:#0b0c10;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+  button.ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
+  th{background:#0f1118;color:var(--muted)}
+  .pill{display:inline-block;padding:4px 8px;border:1px solid var(--border);border-radius:999px;background:#0f1118;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌀 Campeonato Beyblade</h1>
+  <div class="tabs">
+    <div class="tab active" data-view="marcador">Marcador</div>
+    <div class="tab" data-view="tienda">Tienda</div>
+    <div class="tab" data-view="cartas">Cartas</div>
+    <div class="tab" data-view="reglas">Reglas</div>
+    <div class="tab" data-view="historial">Historial</div>
+    <div class="tab" data-view="backup">Backup</div>
+  </div>
+</header>
+
+<main>
+  <!-- Marcador -->
+  <section data-section="marcador">
+    <h2>📊 Marcador</h2>
+    <div class="row">
+      <div class="col"><label>Jugador 1</label><input id="p1name" value="Jugador 1"></div>
+      <div class="col"><label>Jugador 2</label><input id="p2name" value="Jugador 2"></div>
+      <div class="col"><label>Meta puntos</label><input id="goal" type="number" value="30"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="col">
+        <h3 id="p1score">0</h3><div>Créditos: <span id="p1credits">0</span></div>
+        <button onclick="addResult('p1','explosion')">+3 Explosión</button>
+        <button onclick="addResult('p1','derribo')">+2 Derribo</button>
+        <button onclick="addResult('p1','resistencia')">+1 Resistencia</button>
+      </div>
+      <div class="col">
+        <h3 id="p2score">0</h3><div>Créditos: <span id="p2credits">0</span></div>
+        <button onclick="addResult('p2','explosion')">+3 Explosión</button>
+        <button onclick="addResult('p2','derribo')">+2 Derribo</button>
+        <button onclick="addResult('p2','resistencia')">+1 Resistencia</button>
+      </div>
+    </div>
+    <table style="margin-top:10px"><thead><tr><th>#</th><th>Ganador</th><th>Tipo</th><th>P1</th><th>P2</th></tr></thead><tbody id="roundsBody"></tbody></table>
+    <button class="ghost" onclick="resetTournament()">🔄 Reiniciar</button>
+  </section>
+
+  <!-- Tienda -->
+  <section data-section="tienda" hidden>
+    <h2>💰 Tienda</h2>
+    <div class="row">
+      <div class="col"><button onclick="buy('p1','punta')">P1 Punta (5)</button><button onclick="buy('p2','punta')">P2 Punta</button></div>
+      <div class="col"><button onclick="buy('p1','anillo')">P1 Anillo (6)</button><button onclick="buy('p2','anillo')">P2 Anillo</button></div>
+      <div class="col"><button onclick="buy('p1','rueda')">P1 Rueda (8)</button><button onclick="buy('p2','rueda')">P2 Rueda</button></div>
+    </div>
+    <table style="margin-top:10px"><thead><tr><th>Jugador</th><th>Item</th><th>Costo</th><th>Créditos restantes</th><th>Fecha</th></tr></thead><tbody id="shopLog"></tbody></table>
+  </section>
+
+  <!-- Cartas -->
+  <section data-section="cartas" hidden>
+    <h2>🎴 Cartas</h2>
+    <button onclick="drawCard('evento')">Evento</button><p id="eventoActual"></p>
+    <button onclick="assignMission('p1')">Misión P1</button><ul id="p1missions"></ul>
+    <button onclick="assignMission('p2')">Misión P2</button><ul id="p2missions"></ul>
+  </section>
+
+  <!-- Reglas -->
+  <section data-section="reglas" hidden>
+    <h2>📖 Reglas</h2>
+    <ul><li>Explosión = 3 pts</li><li>Derribo = 2 pts</li><li>Resistencia = 1 pt</li></ul>
+  </section>
+
+  <!-- Historial -->
+  <section data-section="historial" hidden>
+    <h2>📜 Historial</h2>
+    <ul id="history"></ul>
+  </section>
+
+  <!-- Backup -->
+  <section data-section="backup" hidden>
+    <h2>💾 Backup</h2>
+    <button onclick="exportJSON()">Exportar</button>
+    <input type="file" id="importFile"><button onclick="importJSON()">Importar</button>
+  </section>
+</main>
+
+<script>
+// Utilidad: clonador compatible
+const clone = (o)=> window.structuredClone?structuredClone(o):JSON.parse(JSON.stringify(o));
+
+const defaultState={
+  p1:{name:"Jugador 1",score:0,credits:0,missions:[]},
+  p2:{name:"Jugador 2",score:0,credits:0,missions:[]},
+  goal:30, rounds:[], shop:[], history:[],
+  prices:{punta:5,anillo:6,rueda:8},
+  events:["Mercado negro","Sabotaje","Refuerzo"],
+  missions:["Gana 2 veces","Provoca una explosión","Gana 3 seguidas"]
+};
+let state=load()||clone(defaultState);
+
+// helpers
+function $(id){return document.getElementById(id)}
+function save(){localStorage.setItem("beyblade_state",JSON.stringify(state))}
+function load(){try{return JSON.parse(localStorage.getItem("beyblade_state"))}catch(e){return null}}
+function addHistory(txt){state.history.push(txt);save();render()}
+
+// marcador
+function addResult(p,t){
+  const pts=t==="explosion"?3:t==="derribo"?2:1;
+  state[p].score+=pts; state[p].credits+=pts;
+  state.rounds.push({n:state.rounds.length+1,winner:p,type:t,p1:state.p1.score,p2:state.p2.score});
+  addHistory(`${state[p].name} gana por ${t} (+${pts})`);
+  if(state[p].score>=state.goal) alert(`🏆 ${state[p].name} gana el campeonato!`);
+  save(); render();
+}
+
+// tienda
+function buy(p,item){
+  const cost=state.prices[item]||0;
+  if(state[p].credits<cost){alert("No tienes créditos suficientes");return}
+  state[p].credits-=cost;
+  state.shop.push({player:p,item,cost,creditsLeft:state[p].credits,ts:new Date().toLocaleString()});
+  addHistory(`${state[p].name} compra ${item} (${cost})`);
+  save(); render();
+}
+
+// cartas
+function drawCard(type){
+  const arr= type==="evento"?state.events:state.missions;
+  const c=arr[Math.floor(Math.random()*arr.length)];
+  if(type==="evento") $("eventoActual").textContent=c;
+  addHistory(`Carta ${type}: ${c}`);
+}
+function assignMission(p){
+  const m=state.missions[Math.floor(Math.random()*state.missions.length)];
+  state[p].missions.push(m); addHistory(`${state[p].name} recibe misión: ${m}`);
+  save(); render();
+}
+
+// backup
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(state)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="beyblade_backup.json";a.click();
+}
+function importJSON(){
+  const f=$("importFile").files[0]; if(!f){alert("Selecciona archivo");return}
+  const r=new FileReader(); r.onload=e=>{state=JSON.parse(e.target.result);save();render();}; r.readAsText(f);
+}
+
+// reset
+function resetTournament(){
+  if(confirm("¿Seguro reiniciar?")){
+    state=clone(defaultState); save(); render();
+  }
+}
+
+// render
+function render(){
+  $("p1name").value=state.p1.name; $("p2name").value=state.p2.name; $("goal").value=state.goal;
+  $("p1score").textContent=state.p1.score; $("p2score").textContent=state.p2.score;
+  $("p1credits").textContent=state.p1.credits; $("p2credits").textContent=state.p2.credits;
+  $("roundsBody").innerHTML=state.rounds.map(r=>`<tr><td>${r.n}</td><td>${r.winner}</td><td>${r.type}</td><td>${r.p1}</td><td>${r.p2}</td></tr>`).join("");
+  $("shopLog").innerHTML=state.shop.map(s=>`<tr><td>${s.player}</td><td>${s.item}</td><td>${s.cost}</td><td>${s.creditsLeft}</td><td>${s.ts}</td></tr>`).join("");
+  $("history").innerHTML=state.history.map(h=>`<li>${h}</li>`).join("");
+  $("p1missions").innerHTML=state.p1.missions.map(m=>`<li>${m}</li>`).join("");
+  $("p2missions").innerHTML=state.p2.missions.map(m=>`<li>${m}</li>`).join("");
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");document.querySelectorAll("section[data-section]").forEach(s=>s.hidden=s.dataset.section!==t.dataset.view)});
+$("p1name").oninput=e=>{state.p1.name=e.target.value;save()}
+$("p2name").oninput=e=>{state.p2.name=e.target.value;save()}
+$("goal").oninput=e=>{state.goal=+e.target.value;save()}
+render();
+</script>
+</body>
+</html>
